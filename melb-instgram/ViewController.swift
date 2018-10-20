@@ -72,9 +72,54 @@ extension UIImage{
         let imgEnd:UIImage = UIImage(cgImage: cgimg)
         return imgEnd
     }
+    
+    func crop(ratio: CGFloat) -> UIImage {
+        //计算最终尺寸
+        var newSize:CGSize!
+        if size.width/size.height > ratio {
+            newSize = CGSize(width: size.height * ratio, height: size.height)
+        }else{
+            newSize = CGSize(width: size.width, height: size.width / ratio)
+        }
+        
+        ////图片绘制区域
+        var rect = CGRect.zero
+        rect.size.width  = size.width
+        rect.size.height = size.height
+        rect.origin.x    = (newSize.width - size.width ) / 2.0
+        rect.origin.y    = (newSize.height - size.height ) / 2.0
+        
+        //绘制并获取最终图片
+        UIGraphicsBeginImageContext(newSize)
+        draw(in: rect)
+        let scaledImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        
+        return scaledImage!
+    }
 }
 
-class ViewController: UIViewController,UIImagePickerControllerDelegate,UINavigationControllerDelegate {
+extension UIImageView{
+    func imageFrame()->CGRect{
+        let imageViewSize = self.frame.size
+        guard let imageSize = self.image?.size else{return CGRect.zero}
+        let imageRatio = imageSize.width / imageSize.height
+        let imageViewRatio = imageViewSize.width / imageViewSize.height
+        if imageRatio < imageViewRatio {
+            let scaleFactor = imageViewSize.height / imageSize.height
+            let width = imageSize.width * scaleFactor
+            let topLeftX = (imageViewSize.width - width) * 0.5
+            return CGRect(x: topLeftX, y: 0, width: width, height: imageViewSize.height)
+        }else{
+            let scalFactor = imageViewSize.width / imageSize.width
+            let height = imageSize.height * scalFactor
+            let topLeftY = (imageViewSize.height - height) * 0.5
+            return CGRect(x: 0, y: topLeftY, width: imageViewSize.width, height: height)
+        }
+    }
+}
+
+class ViewController: UIViewController,UIImagePickerControllerDelegate,UINavigationControllerDelegate,UIScrollViewDelegate {
     var originalImage:UIImage!
     var currentImage:UIImage!
     var filteredImage:UIImage!
@@ -83,6 +128,31 @@ class ViewController: UIViewController,UIImagePickerControllerDelegate,UINavigat
     var brightnessFilter:CIFilter!
     var contrastFilter:CIFilter!
     var gridImageView:UIImageView!
+//    var originalImageView:UIImageView!
+    var cropArea:CGRect{
+        get{
+//            let factor = imageView.image!.size.width/view.frame.width
+            print(imageView.image!.size.width)
+            print(view.frame.width)
+            let scale = 1/scrollView.zoomScale
+            let frame = imageView.imageFrame()
+            let factorWidth = imageView.image!.size.width/frame.width
+            let factorHeight = imageView.image!.size.height/frame.height
+            let x = (scrollView.contentOffset.x + cropAreaView.frame.origin.x - frame.origin.x)  * factorWidth
+            print(scrollView.contentOffset.x)
+            print(cropAreaView.frame.origin.x)
+            print(frame.origin.x)
+            let y = (scrollView.contentOffset.y + cropAreaView.frame.origin.y - frame.origin.y-80) * factorHeight
+            print(scrollView.contentOffset.y)
+            print(cropAreaView.frame.origin.y)
+            print(frame.origin.y)
+            let width = cropAreaView.frame.size.width  * factorWidth
+            let height = cropAreaView.frame.size.height  * factorHeight
+            print(cropAreaView.frame.size.width)
+            print(cropAreaView.frame.size.height)
+            return CGRect(x: x, y: y, width: width, height: height)
+        }
+    }
     
     lazy var context: CIContext = {
         return CIContext(options: nil)
@@ -113,6 +183,13 @@ class ViewController: UIViewController,UIImagePickerControllerDelegate,UINavigat
     @IBOutlet weak var threeToTwo: UIButton!
     @IBOutlet weak var threeToFour: UIButton!
     @IBOutlet weak var fourToFive: UIButton!
+    @IBOutlet var scrollView: UIScrollView!{
+        didSet{
+            scrollView.delegate = self
+        }
+    }
+    @IBOutlet var cropAreaView: CropAreaView!
+    
     
     @IBAction func cameraView(_ sender: UIButton) {
         hideSliders()
@@ -254,24 +331,37 @@ class ViewController: UIViewController,UIImagePickerControllerDelegate,UINavigat
     }
     
     @IBAction func cropImage(_ sender: UIButton) {
-        showCroppers()
+//        showCroppers()
         hideSliders()
+        let croppedCGImage = imageView.image?.cgImage?.cropping(to: cropArea)
+        let croppedImage = UIImage(cgImage: croppedCGImage!)
+        imageView.image = croppedImage
+        self.currentImage=croppedImage
+        self.filteredImage=croppedImage
+        self.croppedImage=croppedImage
+        self.originalImage=croppedImage
+        scrollView.maximumZoomScale=1
+        scrollView.minimumZoomScale=1
+        scrollView.zoomScale = 1
+        cropAreaView.alpha=0
     }
     
     @IBAction func cropOneToOne(_ sender: UIButton) {
-        forNumToNum(width: 5, height: 5)
+        forNumToNum(ratio:1)
+        
+        
     }
   
     @IBAction func cropThreeToTwo(_ sender:UIButton){
-        forNumToNum(width: 200, height: 300)
+        forNumToNum(ratio: 3/2)
     }
     
     @IBAction func cropThreeToFour(_ sender:UIButton){
-        forNumToNum(width: 300, height: 400)
+        forNumToNum(ratio: 3/4)
     }
     
     @IBAction func cropFourToFive(_ sender:UIButton){
-        forNumToNum(width: 400, height: 500)
+        forNumToNum(ratio: 4/5)
     }
     
     @IBAction func goBack(_ sender: Any) {
@@ -279,15 +369,25 @@ class ViewController: UIViewController,UIImagePickerControllerDelegate,UINavigat
     }
     
     @IBAction func goNext(_ sender: Any) {
-        
+//        performSegue(withIdentifier: "goToPost", sender: <#T##Any?#>)
     }
     
-    func forNumToNum(width:Double,height:Double){
-        let newImage=cropToBounds(image: filteredImage, width: width, height: height)
+//    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+//        <#code#>
+//    }
+    
+    func viewForZooming(in scrollView: UIScrollView) -> UIView? {
+        return imageView
+    }
+
+    func forNumToNum(ratio:CGFloat){
+//        let newImage=cropToBounds(image: filteredImage, width: width, height: height)
+        let newImage=filteredImage.crop(ratio: ratio)
         self.imageView.image=newImage
         self.currentImage=newImage
         //update croppedImage
-        let newCroppedImage=cropToBounds(image: originalImage, width: 200, height: 300)
+//        let newCroppedImage=cropToBounds(image: originalImage, width: 200, height: 300)
+        let newCroppedImage=originalImage.crop(ratio: ratio)
         self.croppedImage=newCroppedImage
     }
     
@@ -326,12 +426,15 @@ class ViewController: UIViewController,UIImagePickerControllerDelegate,UINavigat
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         var image=info[UIImagePickerController.InfoKey.originalImage] as! UIImage // as! downcasting 向下类型转换
-        image=image.fixedOrientation()
-        self.originalImage=image
+        image=image.fixedOrientation()  //pickered image has left 90 degree rotation error...so we need to fix orientation
+        cropAreaView.alpha=0.35
         self.imageView.image=image
-//        self.currentImage=image
+        self.originalImage=image
         self.filteredImage=image
         self.croppedImage=image
+        self.currentImage=image
+        scrollView.minimumZoomScale = 0.5
+        scrollView.maximumZoomScale = 3.0
         //        UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
         picker.dismiss(animated: true,completion:nil)
     }
@@ -354,35 +457,11 @@ class ViewController: UIViewController,UIImagePickerControllerDelegate,UINavigat
         threeToFour.isHidden=false
         fourToFive.isHidden=false
     }
-    
-    func cropToBounds(image: UIImage, width: Double, height: Double) -> UIImage {
-        let cgimage = image.cgImage!
-        let contextImage: UIImage = UIImage(cgImage: cgimage)
-        let contextSize: CGSize = contextImage.size
-        var posX: CGFloat = 0.0
-        var posY: CGFloat = 0.0
-        var cgwidth: CGFloat = CGFloat(width)
-        var cgheight: CGFloat = CGFloat(height)
-        
-        // See what size is longer and create the center off of that
-        if contextSize.width > contextSize.height {
-            posX = ((contextSize.width - contextSize.height) / 2)
-            posY = 0
-            cgwidth = contextSize.height
-            cgheight = contextSize.height
-        } else {
-            posX = 0
-            posY = ((contextSize.height - contextSize.width) / 2)
-            cgwidth = contextSize.width
-            cgheight = contextSize.width
-        }
-        
-        let rect: CGRect = CGRect(x: posX, y: posY, width: cgwidth, height: cgheight)
-        // Create bitmap image from context using the rect
-        let imageRef: CGImage = cgimage.cropping(to: rect)!
-        // Create a new image based on the imageRef and rotate back to the original orientation
-        let image: UIImage = UIImage(cgImage: imageRef, scale: image.scale, orientation: image.imageOrientation)
-        return image
+}
+
+class CropAreaView: UIView {
+    override func point(inside point: CGPoint, with event:   UIEvent?) -> Bool {
+        return false
     }
 }
 

@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		CD4B99152176E0AA004E0B0E /* grid.png in Resources */ = {isa = PBXBuildFile; fileRef = CD4B99142176E0AA004E0B0E /* grid.png */; };
+		CD59D546217844450061A1F2 /* PostViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD59D545217844450061A1F2 /* PostViewController.swift */; };
+		CD59D548217892B80061A1F2 /* test.jpg in Resources */ = {isa = PBXBuildFile; fileRef = CD59D547217892B80061A1F2 /* test.jpg */; };
 		CD9A47582170498300E4EA06 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD9A47572170498300E4EA06 /* AppDelegate.swift */; };
 		CD9A475A2170498300E4EA06 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD9A47592170498300E4EA06 /* ViewController.swift */; };
 		CD9A475D2170498300E4EA06 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CD9A475B2170498300E4EA06 /* Main.storyboard */; };
@@ -36,9 +38,12 @@
 
 /* Begin PBXFileReference section */
 		CD4B99142176E0AA004E0B0E /* grid.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = grid.png; sourceTree = "<group>"; };
+		CD59D545217844450061A1F2 /* PostViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostViewController.swift; sourceTree = "<group>"; };
+		CD59D547217892B80061A1F2 /* test.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = test.jpg; sourceTree = "<group>"; };
+		CD59D549217893700061A1F2 /* TestViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestViewController.swift; sourceTree = "<group>"; };
 		CD9A47542170498300E4EA06 /* melb-instgram.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "melb-instgram.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		CD9A47572170498300E4EA06 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		CD9A47592170498300E4EA06 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		CD9A47592170498300E4EA06 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; wrapsLines = 1; };
 		CD9A475C2170498300E4EA06 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		CD9A475E2170498500E4EA06 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CD9A47612170498500E4EA06 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -102,10 +107,13 @@
 				CD9A47572170498300E4EA06 /* AppDelegate.swift */,
 				CD9A47592170498300E4EA06 /* ViewController.swift */,
 				CD9A475B2170498300E4EA06 /* Main.storyboard */,
+				CD59D547217892B80061A1F2 /* test.jpg */,
 				CD9A475E2170498500E4EA06 /* Assets.xcassets */,
 				CD4B99142176E0AA004E0B0E /* grid.png */,
 				CD9A47602170498500E4EA06 /* LaunchScreen.storyboard */,
 				CD9A47632170498500E4EA06 /* Info.plist */,
+				CD59D545217844450061A1F2 /* PostViewController.swift */,
+				CD59D549217893700061A1F2 /* TestViewController.swift */,
 			);
 			path = "melb-instgram";
 			sourceTree = "<group>";
@@ -233,6 +241,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CD9A47622170498500E4EA06 /* LaunchScreen.storyboard in Resources */,
+				CD59D548217892B80061A1F2 /* test.jpg in Resources */,
 				CD4B99152176E0AA004E0B0E /* grid.png in Resources */,
 				CD9A475F2170498500E4EA06 /* Assets.xcassets in Resources */,
 				CD9A475D2170498300E4EA06 /* Main.storyboard in Resources */,
@@ -260,6 +269,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CD59D546217844450061A1F2 /* PostViewController.swift in Sources */,
 				CD9A475A2170498300E4EA06 /* ViewController.swift in Sources */,
 				CD9A47582170498300E4EA06 /* AppDelegate.swift in Sources */,
 			);
