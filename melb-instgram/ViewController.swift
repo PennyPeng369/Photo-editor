@@ -161,7 +161,6 @@ class ViewController: UIViewController,UIImagePickerControllerDelegate,UINavigat
     override func viewDidLoad() {
         super.viewDidLoad()
         hideSliders()
-        hideCroppers()
         brightnessSlider.isContinuous=false
         brightnessSlider.minimumValue = -0.5
         brightnessSlider.maximumValue = 0.5
@@ -179,10 +178,6 @@ class ViewController: UIViewController,UIImagePickerControllerDelegate,UINavigat
     @IBOutlet weak var contrastSlider: UISlider!
     @IBOutlet weak var brightnessSlider: UISlider!
     @IBOutlet weak var imageView: UIImageView!
-    @IBOutlet weak var oneToOne: UIButton!
-    @IBOutlet weak var threeToTwo: UIButton!
-    @IBOutlet weak var threeToFour: UIButton!
-    @IBOutlet weak var fourToFive: UIButton!
     @IBOutlet var scrollView: UIScrollView!{
         didSet{
             scrollView.delegate = self
@@ -193,7 +188,6 @@ class ViewController: UIViewController,UIImagePickerControllerDelegate,UINavigat
     
     @IBAction func cameraView(_ sender: UIButton) {
         hideSliders()
-        hideCroppers()
         if UIImagePickerController.isSourceTypeAvailable(.camera){
             let picker=UIImagePickerController()
             picker.delegate=self
@@ -210,7 +204,6 @@ class ViewController: UIViewController,UIImagePickerControllerDelegate,UINavigat
     
     @IBAction func albumView(_ sender: Any) {
         hideSliders()
-        hideCroppers()
         if UIImagePickerController.isSourceTypeAvailable(.photoLibrary){
             let picker=UIImagePickerController()
             picker.delegate=self
@@ -224,7 +217,6 @@ class ViewController: UIViewController,UIImagePickerControllerDelegate,UINavigat
     
     @IBAction func filterAuto(_ sender: Any) {
         hideSliders()
-        hideCroppers()
         let newImage=forFilterAuto(image: croppedImage)
         self.imageView.image=newImage
         self.currentImage=newImage
@@ -254,28 +246,24 @@ class ViewController: UIViewController,UIImagePickerControllerDelegate,UINavigat
     
     @IBAction func filterChrome(_ sender: Any) {
         hideSliders()
-        hideCroppers()
         self.filter=CIFilter(name: "CIPhotoEffectChrome")
         filterOutImage()
     }
     
     @IBAction func filterFade(_ sender: Any) {
         hideSliders()
-        hideCroppers()
         self.filter=CIFilter(name: "CIPhotoEffectFade")
         filterOutImage()
     }
     
     @IBAction func filterNoir(_ sender: Any) {
         hideSliders()
-        hideCroppers()
         self.filter=CIFilter(name: "CIPhotoEffectNoir")
         filterOutImage()
     }
     
     @IBAction func showOriginal(_ sender: Any) {
         hideSliders()
-        hideCroppers()
         self.imageView.image=self.originalImage
         self.currentImage=self.originalImage
         self.croppedImage=self.originalImage
@@ -285,14 +273,13 @@ class ViewController: UIViewController,UIImagePickerControllerDelegate,UINavigat
     @IBAction func brightnessChange(_ sender: UISlider) {
         brightnessSlider.isHidden=false
         contrastSlider.isHidden=true
-        hideCroppers()
         let ciImage=CIImage(image: currentImage)
         brightnessFilter.setValue(ciImage, forKey: "inputImage")
     }
     
     @IBAction func brightnessValueChanged(_ sender: UISlider) {
-        brightnessFilter.setValue(NSNumber(value: sender.value), forKey: "inputBrightness");
-        let outputImage = brightnessFilter.outputImage;
+        brightnessFilter.setValue(NSNumber(value: sender.value), forKey: "inputBrightness")
+        let outputImage = brightnessFilter.outputImage
         if let outputImage=outputImage{
 //            let newImage=UIImage(ciImage: outputImage)
             let cgImage = context.createCGImage(outputImage, from: outputImage.extent)
@@ -308,7 +295,6 @@ class ViewController: UIViewController,UIImagePickerControllerDelegate,UINavigat
     @IBAction func contrastChange(_ sender: UIButton) {
         brightnessSlider.isHidden=true
         contrastSlider.isHidden=false
-        hideCroppers()
         let ciImage=CIImage(image: currentImage)
         contrastFilter.setValue(ciImage, forKey: "inputImage")
     }
@@ -331,7 +317,6 @@ class ViewController: UIViewController,UIImagePickerControllerDelegate,UINavigat
     }
     
     @IBAction func cropImage(_ sender: UIButton) {
-//        showCroppers()
         hideSliders()
         let croppedCGImage = imageView.image?.cgImage?.cropping(to: cropArea)
         let croppedImage = UIImage(cgImage: croppedCGImage!)
@@ -346,49 +331,23 @@ class ViewController: UIViewController,UIImagePickerControllerDelegate,UINavigat
         cropAreaView.alpha=0
     }
     
-    @IBAction func cropOneToOne(_ sender: UIButton) {
-        forNumToNum(ratio:1)
-        
-        
-    }
-  
-    @IBAction func cropThreeToTwo(_ sender:UIButton){
-        forNumToNum(ratio: 3/2)
-    }
-    
-    @IBAction func cropThreeToFour(_ sender:UIButton){
-        forNumToNum(ratio: 3/4)
-    }
-    
-    @IBAction func cropFourToFive(_ sender:UIButton){
-        forNumToNum(ratio: 4/5)
-    }
-    
     @IBAction func goBack(_ sender: Any) {
         
     }
     
     @IBAction func goNext(_ sender: Any) {
-//        performSegue(withIdentifier: "goToPost", sender: <#T##Any?#>)
+        performSegue(withIdentifier: "goToPost", sender: self)
     }
-    
-//    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-//        <#code#>
-//    }
+
+    override func prepare(for segue: UIStoryboardSegue, sender:Any?) {
+        if segue.identifier == "goToPost", let postController = segue.destination as? PostViewController {
+            postController.postImage = currentImage as? UIImage // sender 为 performSegue 方法设置的值
+        }
+        
+    }
     
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
         return imageView
-    }
-
-    func forNumToNum(ratio:CGFloat){
-//        let newImage=cropToBounds(image: filteredImage, width: width, height: height)
-        let newImage=filteredImage.crop(ratio: ratio)
-        self.imageView.image=newImage
-        self.currentImage=newImage
-        //update croppedImage
-//        let newCroppedImage=cropToBounds(image: originalImage, width: 200, height: 300)
-        let newCroppedImage=originalImage.crop(ratio: ratio)
-        self.croppedImage=newCroppedImage
     }
     
     func showAlert(msg:String){
@@ -442,20 +401,6 @@ class ViewController: UIViewController,UIImagePickerControllerDelegate,UINavigat
     func hideSliders(){
         brightnessSlider.isHidden=true
         contrastSlider.isHidden=true
-    }
-    
-    func hideCroppers(){
-        oneToOne.isHidden=true
-        threeToTwo.isHidden=true
-        threeToFour.isHidden=true
-        fourToFive.isHidden=true
-    }
-    
-    func showCroppers(){
-        oneToOne.isHidden=false
-        threeToTwo.isHidden=false
-        threeToFour.isHidden=false
-        fourToFive.isHidden=false
     }
 }
 
